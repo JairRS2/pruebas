@@ -3,7 +3,7 @@ const productsRoutes = require('./routes/products.routes');
 
 const app = express();
 app.use(express.json());
-
+//
 // Rutas
 app.use('/api/products', productsRoutes);
 
