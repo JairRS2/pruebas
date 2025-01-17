@@ -101,10 +101,13 @@ exports.loginUsuario = async (req, res) => {
   
       const usuario = result.rows[0];
   
-      // Verificar la contraseña en texto plano
+      console.log(`Contraseña almacenada: ${usuario.cClaveUsuario}`);
+      console.log(`Contraseña enviada: ${cClaveUsuario}`);
+      
       if (usuario.cClaveUsuario !== cClaveUsuario) {
         return res.status(401).json({ message: 'Contraseña incorrecta' });
       }
+      
   
       // Mapeo de roles basado en el nivel de usuario
       const roles = {
