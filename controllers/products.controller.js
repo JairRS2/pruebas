@@ -1,6 +1,4 @@
-// products.controller.js
-
-const pool = require('../db'); // Conexión a la base de datos
+const pool = require('../config/db');
 const { sql } = require('pg'); // Si usas PostgreSQL, ajusta esto
 
 // Obtener todos los productos
