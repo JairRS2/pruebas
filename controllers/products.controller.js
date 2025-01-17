@@ -75,10 +75,6 @@ exports.deleteProduct = async (req, res) => {
     }
 };
 
-
-
-
-// Login de usuarios con roles
 exports.loginUsuario = async (req, res) => {
     const { cClaveEmpleado, cClaveUsuario } = req.body;
   
@@ -92,20 +88,18 @@ exports.loginUsuario = async (req, res) => {
       const query = `
         SELECT cClaveEmpleado, cClaveUsuario, nNivelUsuario, cNombreEmpleado
         FROM usuario
-        WHERE cClaveEmpleado = @cClaveEmpleado
+        WHERE cClaveEmpleado = $1
       `;
   
-      const result = await pool
-        .request()
-        .input('cClaveEmpleado', sql.VarChar, cClaveEmpleado)
-        .query(query);
+      // Ejecutar la consulta utilizando el pool de conexiones
+      const result = await pool.query(query, [cClaveEmpleado]);
   
       // Verificar si el usuario existe
-      if (result.recordset.length === 0) {
+      if (result.rows.length === 0) {
         return res.status(401).json({ message: 'El usuario o la contraseña son incorrectos' });
       }
   
-      const usuario = result.recordset[0];
+      const usuario = result.rows[0];
   
       // Verificar la contraseña en texto plano
       if (usuario.cClaveUsuario !== cClaveUsuario) {
@@ -116,7 +110,7 @@ exports.loginUsuario = async (req, res) => {
       const roles = {
         5: 'Administrador',
         1: 'Usuario',
-        0: 'Usuario'
+        0: 'Usuario',
       };
   
       const role = roles[usuario.nNivelUsuario] || 'Rol no autorizado';
