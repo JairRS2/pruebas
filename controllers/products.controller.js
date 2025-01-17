@@ -75,6 +75,9 @@ exports.deleteProduct = async (req, res) => {
     }
 };
 
+
+
+
 exports.loginUsuario = async (req, res) => {
   const { correo, contrasena } = req.body;
 
