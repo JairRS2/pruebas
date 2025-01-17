@@ -78,65 +78,66 @@ exports.deleteProduct = async (req, res) => {
 
 // Login de usuario
 exports.loginUsuario = async (req, res) => {
-  const { cclaveempleado, cclaveusuario } = req.body;
+    const { cclaveempleado, cclaveusuario } = req.body;
   
-  // Validación de entrada
-  if (!cclaveempleado || !cclaveusuario) {
-    return res.status(400).json({ message: 'Por favor, proporciona ambos campos' });
-  }
-
-  try {
-    // Consulta SQL para obtener el usuario
-    const query = `
-      SELECT cclaveempleado, cclaveusuario, nNivelUsuario, cNombreEmpleado
-      FROM usuario
-      WHERE cclaveempleado = $1
-    `;
-    
-    const result = await pool.query(query, [cclaveempleado]);
-    console.log(result.rows);
-    console.log(usuario.cclaveusuario);
-
-
-
-    // Verificar si el usuario existe
-    if (result.rows.length === 0) {
-      return res.status(401).json({ message: 'El usuario o la contraseña son incorrectos' });
+    // Validación de entrada
+    if (!cclaveempleado || !cclaveusuario) {
+      return res.status(400).json({ message: 'Por favor, proporciona ambos campos' });
     }
-
-    const usuario = result.rows[0];
-
-    // Verificar la contraseña
-    if (usuario.cclaveusuario !== cclaveusuario) {
-      return res.status(401).json({ message: 'Contraseña incorrecta' });
+  
+    try {
+      // Consulta SQL para obtener el usuario
+      const query = `
+        SELECT cclaveempleado, cclaveusuario, nnivelusuario, cnombreempleado
+        FROM usuario
+        WHERE cclaveempleado = $1
+      `;
+  
+      const result = await pool.query(query, [cclaveempleado]);
+  
+      // Verificar si el usuario existe
+      if (result.rows.length === 0) {
+        return res.status(401).json({ message: 'El usuario o la contraseña son incorrectos' });
+      }
+  
+      // Acceder al usuario desde los resultados
+      const usuario = result.rows[0];
+  
+      // Mostrar los datos del usuario en la consola (opcional, para debug)
+      console.log('Usuario encontrado:', usuario);
+  
+      // Verificar la contraseña
+      if (usuario.cclaveusuario !== cclaveusuario) {
+        return res.status(401).json({ message: 'Contraseña incorrecta' });
+      }
+  
+      // Mapeo de roles basado en el nivel de usuario
+      const roles = {
+        5: 'Administrador',
+        1: 'Usuario',
+        0: 'Usuario',
+      };
+  
+      const role = roles[usuario.nnivelusuario] || 'Rol no autorizado';
+  
+      // Si el rol no es válido
+      if (role === 'Rol no autorizado') {
+        return res.status(403).json({ message: 'Rol no autorizado' });
+      }
+  
+      // Respuesta exitosa
+      return res.status(200).json({
+        message: `Inicio de sesión exitoso: ${usuario.cnombreempleado}`,
+        nombre: usuario.cnombreempleado,
+        nnivelusuario: usuario.nnivelusuario,
+        role: role,
+      });
+    } catch (error) {
+      console.error('Error en el login:', error.message);
+      return res.status(500).json({ message: 'Error interno del servidor' });
     }
-
-    // Mapeo de roles basado en el nivel de usuario
-    const roles = {
-      5: 'Administrador',
-      1: 'Usuario',
-      0: 'Usuario'
-    };
-
-    const role = roles[usuario.nNivelUsuario] || 'Rol no autorizado';
-
-    // Si el rol no es válido
-    if (role === 'Rol no autorizado') {
-      return res.status(403).json({ message: 'Rol no autorizado' });
-    }
-
-    // Respuesta exitosa
-    return res.status(200).json({
-      message: `Inicio de sesión exitoso: ${usuario.cNombreEmpleado}`,
-      nombre: usuario.cNombreEmpleado,
-      nNivelUsuario: usuario.nNivelUsuario,
-      role: role,
-    });
-  } catch (error) {
-    console.error('Error en el login:', error.message);
-    return res.status(500).json({ message: 'Error interno del servidor' });
-  }
-};
+  };
+  
 
 // Obtener usuarios
 exports.getUsuarios = async (req, res) => {
