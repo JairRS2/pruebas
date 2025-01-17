@@ -10,7 +10,15 @@ exports.getProducts = async (req, res) => {
         res.status(500).json({ error: 'Error al obtener productos' });
     }
 };
-
+exports.getUsuarios = async (req, res) => {
+    try {
+        const result = await pool.query('SELECT * FROM usuario');
+        res.status(200).json(result.rows);
+    } catch (err) {
+        console.error(err);
+        res.status(500).json({ error: 'Error al obtener los usuarios' });
+    }
+};
 // Obtener un producto por ID
 exports.getProductById = async (req, res) => {
     const { id } = req.params;
