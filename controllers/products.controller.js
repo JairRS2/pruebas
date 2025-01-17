@@ -80,22 +80,26 @@ exports.deleteProduct = async (req, res) => {
 
 // Login de usuario
 exports.loginUsuario = async (req, res) => {
-  const { cClaveEmpleado, cClaveUsuario } = req.body;
+  const { cclaveempleado, cclaveusuario } = req.body;
   
   // Validación de entrada
-  if (!cClaveEmpleado || !cClaveUsuario) {
+  if (!cclaveempleado || !cclaveusuario) {
     return res.status(400).json({ message: 'Por favor, proporciona ambos campos' });
   }
 
   try {
     // Consulta SQL para obtener el usuario
     const query = `
-      SELECT cClaveEmpleado, cClaveUsuario, nNivelUsuario, cNombreEmpleado
+      SELECT cclaveempleado, cclaveusuario, nNivelUsuario, cNombreEmpleado
       FROM usuario
-      WHERE cClaveEmpleado = $1
+      WHERE cclaveempleado = $1
     `;
     
-    const result = await pool.query(query, [cClaveEmpleado]);
+    const result = await pool.query(query, [cclaveempleado]);
+    console.log(result.rows);
+    console.log(usuario.cclaveusuario);
+
+
 
     // Verificar si el usuario existe
     if (result.rows.length === 0) {
@@ -105,7 +109,7 @@ exports.loginUsuario = async (req, res) => {
     const usuario = result.rows[0];
 
     // Verificar la contraseña
-    if (usuario.cClaveUsuario !== cClaveUsuario) {
+    if (usuario.cclaveusuario !== cclaveusuario) {
       return res.status(401).json({ message: 'Contraseña incorrecta' });
     }
 
