@@ -11,7 +11,7 @@ app.use(cors());
 app.use(express.json());
 
 // Rutas
-app.use('/api/products', productsRoutes);
+app.use('/api', productsRoutes);
 
 // Puerto de escucha
 const PORT = process.env.PORT || 3000;
