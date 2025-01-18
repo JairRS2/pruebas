@@ -4,7 +4,7 @@ const { sql } = require('pg'); // Si usas PostgreSQL, ajusta esto
 // Obtener todos los productos
 exports.getProducts = async (req, res) => {
   try {
-    const result = await pool.query('SELECT * FROM producto'); // Cambié 'productos' por 'producto'
+    const result = await pool.query('SELECT * FROM productos'); // Cambié 'productos' por 'producto'
     res.status(200).json(result.rows);
   } catch (err) {
     console.error(err);
@@ -16,7 +16,7 @@ exports.getProducts = async (req, res) => {
 exports.getProductById = async (req, res) => {
   const { id } = req.params;
   try {
-    const result = await pool.query('SELECT * FROM producto WHERE id = $1', [id]);
+    const result = await pool.query('SELECT * FROM productos WHERE id = $1', [id]);
     if (result.rows.length === 0) {
       return res.status(404).json({ error: 'Producto no encontrado' });
     }
@@ -40,7 +40,7 @@ exports.createProduct = async (req, res) => {
   } = req.body; // Ajustamos los campos según tu tabla
   try {
     const result = await pool.query(
-      'INSERT INTO producto (nombre, descripcion, precio_compra, precio_venta, stock, id_proveedor, fecha_registro) VALUES ($1, $2, $3, $4, $5, $6, $7) RETURNING *',
+      'INSERT INTO productos (nombre, descripcion, precio_compra, precio_venta, stock, id_proveedor, fecha_registro) VALUES ($1, $2, $3, $4, $5, $6, $7) RETURNING *',
       [nombre, descripcion, precio_compra, precio_venta, stock, id_proveedor, fecha_registro]
     );
     res.status(201).json(result.rows[0]);
@@ -64,7 +64,7 @@ exports.updateProduct = async (req, res) => {
   } = req.body; // Ajustamos los campos según tu tabla
   try {
     const result = await pool.query(
-      'UPDATE producto SET nombre = $1, descripcion = $2, precio_compra = $3, precio_venta = $4, stock = $5, id_proveedor = $6, fecha_registro = $7 WHERE id = $8 RETURNING *',
+      'UPDATE productos SET nombre = $1, descripcion = $2, precio_compra = $3, precio_venta = $4, stock = $5, id_proveedor = $6, fecha_registro = $7 WHERE id = $8 RETURNING *',
       [nombre, descripcion, precio_compra, precio_venta, stock, id_proveedor, fecha_registro, id]
     );
     if (result.rows.length === 0) {
@@ -81,7 +81,7 @@ exports.updateProduct = async (req, res) => {
 exports.deleteProduct = async (req, res) => {
   const { id } = req.params;
   try {
-    const result = await pool.query('DELETE FROM producto WHERE id = $1 RETURNING *', [id]);
+    const result = await pool.query('DELETE FROM productos WHERE id = $1 RETURNING *', [id]);
     if (result.rows.length === 0) {
       return res.status(404).json({ error: 'Producto no encontrado' });
     }
