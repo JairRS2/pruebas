@@ -1,5 +1,6 @@
 const pool = require('../config/db');
 const { sql } = require('pg'); // Si usas PostgreSQL, ajusta esto
+const bcrypt = require("bcrypt");
 
 // Obtener todos los productos
 exports.getProducts = async (req, res) => {
@@ -95,71 +96,52 @@ exports.deleteProduct = async (req, res) => {
 
 // Login de usuario
 exports.loginUsuario = async (req, res) => {
-    const { cclaveempleado, cclaveusuario } = req.body;
-  
+  const { correo, contrasena } = req.body;
+
+  try {
     // Validación de entrada
-    if (!cclaveempleado || !cclaveusuario) {
-      return res.status(400).json({ message: 'Por favor, proporciona ambos campos' });
+    if (!correo || !contrasena) {
+      return res.status(400).json({ error: "Correo y contraseña son obligatorios" });
     }
-  
-    try {
-      // Consulta SQL para obtener el usuario
-      const query = `
-        SELECT cclaveempleado, cclaveusuario, nnivelusuario, cnombreempleado
-        FROM usuario
-        WHERE cclaveempleado = $1
-      `;
-  
-      const result = await pool.query(query, [cclaveempleado]);
-  
-      // Verificar si el usuario existe
-      if (result.rows.length === 0) {
-        return res.status(401).json({ message: 'El usuario o la contraseña son incorrectos' });
-      }
-  
-      // Acceder al usuario desde los resultados
-      const usuario = result.rows[0];
-  
-      // Mostrar los datos del usuario en la consola (opcional, para debug)
-      console.log('Usuario encontrado:', usuario);
-  
-      // Verificar la contraseña
-      if (usuario.cclaveusuario !== cclaveusuario) {
-        return res.status(401).json({ message: 'Contraseña incorrecta' });
-      }
-  
-      // Mapeo de roles basado en el nivel de usuario
-      const roles = {
-        5: 'Administrador',
-        1: 'Usuario',
-        0: 'Usuario',
-      };
-  
-      const role = roles[usuario.nnivelusuario] || 'Rol no autorizado';
-  
-      // Si el rol no es válido
-      if (role === 'Rol no autorizado') {
-        return res.status(403).json({ message: 'Rol no autorizado' });
-      }
-  
-      // Respuesta exitosa
-      return res.status(200).json({
-        message: `Inicio de sesión exitoso: ${usuario.cnombreempleado}`,
-        nombre: usuario.cnombreempleado,
-        nnivelusuario: usuario.nnivelusuario,
-        role: role,
-      });
-    } catch (error) {
-      console.error('Error en el login:', error.message);
-      return res.status(500).json({ message: 'Error interno del servidor' });
+
+    // Verificar si el usuario existe en la base de datos
+    const query = "SELECT * FROM usuarios WHERE correo = $1";
+    const result = await pool.query(query, [correo]);
+
+    if (result.rows.length === 0) {
+      return res.status(404).json({ error: "Usuario no encontrado" });
     }
-  };
-  
+
+    const usuario = result.rows[0];
+
+    // Comparar la contraseña ingresada con la almacenada (debe estar encriptada con bcrypt)
+    const esValida = await bcrypt.compare(contrasena, usuario.contrasena);
+
+    if (!esValida) {
+      return res.status(401).json({ error: "Credenciales incorrectas" });
+    }
+
+    // Aquí puedes generar un token JWT si lo necesitas para autenticación
+    return res.status(200).json({
+      mensaje: "Inicio de sesión exitoso",
+      usuario: {
+        id: usuario.id_usuario,
+        nombre: usuario.nombre,
+        correo: usuario.correo,
+        rol: usuario.rol,
+      },
+    });
+  } catch (error) {
+    console.error(error);
+    return res.status(500).json({ error: "Error del servidor" });
+  }
+}
+
 
 // Obtener usuarios
 exports.getUsuarios = async (req, res) => {
   try {
-    const result = await pool.query('SELECT * FROM usuario'); // Asegúrate de usar el nombre correcto de la tabla
+    const result = await pool.query('SELECT * FROM usuarios'); // Asegúrate de usar el nombre correcto de la tabla
     res.status(200).json(result.rows);
   } catch (err) {
     console.error(err);

@@ -1,9 +1,9 @@
 const express = require('express');
 const cors = require('cors'); // Importa el paquete cors
 const productsRoutes = require('./routes/products.routes');
-
+const bodyParser = require("body-parser");
 const app = express();
-
+app.use(bodyParser.json());
 // Habilita CORS para todas las peticiones (cualquier origen)
 app.use(cors());
 

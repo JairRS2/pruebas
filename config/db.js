@@ -10,7 +10,7 @@ const pool = new Pool({
     password: process.env.PG_PASSWORD,
 });
 
-// Probar la conexión al iniciar
+//Probar la conexión al iniciar
 pool.connect((err, client, release) => {
     if (err) {
         console.error('❌ Error al conectar a la base de datos:', err.message);
